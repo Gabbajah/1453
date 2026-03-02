@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turki Analog Horror - Final</title>
+
+<style>
+body {
+    margin: 0;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    transition: background 3s ease;
+}
+
+/* Bendera */
+.flag {
+    width: 300px;
+    animation: pulse 3s infinite;
+}
+
+/* Kata glitch */
+.word {
+    margin-top: 20px;
+    font-size: 42px;
+    font-weight: bold;
+    position: relative;
+    letter-spacing: 4px;
+    animation: flicker 1.2s infinite;
+}
+
+.word::before,
+.word::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.word::before {
+    color: red;
+    z-index: -1;
+    animation: glitch 0.4s infinite;
+}
+
+.word::after {
+    color: darkred;
+    z-index: -2;
+    animation: glitch 0.4s infinite reverse;
+}
+
+@keyframes flicker {
+    0%,100% {opacity:1;}
+    50% {opacity:0.6;}
+}
+
+@keyframes glitch {
+    0% {transform: translate(0);}
+    25% {transform: translate(-3px,2px);}
+    50% {transform: translate(3px,-2px);}
+    75% {transform: translate(-2px,-3px);}
+    100% {transform: translate(0);}
+}
+
+@keyframes pulse {
+    0%,100% {transform: scale(1);}
+    50% {transform: scale(1.05);}
+}
+
+/* Flash merah */
+.redFlash {
+    position: fixed;
+    inset: 0;
+    background: red;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Ending */
+.ending {
+    position: absolute;
+    color: white;
+    font-size: 32px;
+    opacity: 0;
+    text-align: center;
+    letter-spacing: 2px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="redFlash" id="redFlash"></div>
+
+<img class="flag" id="flag"
+src="https://upload.wikimedia.org/wikipedia/commons/b/b4/Flag_of_Turkey.svg">
+
+<div class="word" id="text" data-text="APTAL">APTAL</div>
+
+<div class="ending" id="ending"></div>
+
+<video id="bgAudio" autoplay loop style="display:none">
+    <source src="lv_0_20260302132753.mp4" type="video/mp4">
+</video>
+
+<script>
+const words = [
+    "APTAL","SALAK","GERIZEKALI","AHMAK",
+    "PISLIK","SEREFSIZ","YALANCI",
+    "KORKAK","CAHIL","ZAVALLI"
+];
+
+let i = 0;
+let cycles = 0;
+
+const text = document.getElementById("text");
+const redFlash = document.getElementById("redFlash");
+const flag = document.getElementById("flag");
+const ending = document.getElementById("ending");
+const audio = document.getElementById("bgAudio");
+
+const interval = setInterval(() => {
+
+    i++;
+    if (i >= words.length) {
+        i = 0;
+        cycles++;
+    }
+
+    text.textContent = words[i];
+    text.setAttribute("data-text", words[i]);
+
+    // flash merah tiap kata
+    redFlash.style.opacity = "0.6";
+    setTimeout(() => {
+        redFlash.style.opacity = "0";
+    }, 120);
+
+    // body shake halus
+    document.body.style.transform =
+        `translate(${Math.random()*6-3}px, ${Math.random()*6-3}px)`;
+
+    // setelah 4 putaran → ending
+    if (cycles >= 4) {
+        clearInterval(interval);
+
+        setTimeout(() => {
+
+            // suara mati mendadak
+            audio.pause();
+
+            // layar jadi gelap
+            document.body.style.background = "black";
+            text.style.display = "none";
+            flag.style.display = "none";
+
+            // muncul huruf satu-satu
+            const message = "You've come this far... continue.";
+            let index = 0;
+            ending.style.opacity = "1";
+
+            const typeEffect = setInterval(() => {
+                ending.textContent += message[index];
+                index++;
+                if (index >= message.length) {
+                    clearInterval(typeEffect);
+                }
+            }, 80);
+
+        }, 1000);
+    }
+
+}, 800);
+</script>
+
+</body>
+</html>
